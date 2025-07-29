@@ -1,0 +1,46 @@
+-- Procedure to return all bills with joins
+DELIMITER //
+CREATE PROCEDURE RETURN_ALL_BILLS()
+BEGIN
+    SELECT 
+        B.BILL_ID, 
+        S.SUPPLIER_NAME, 
+        H.HOST_NAME, 
+        E.EVENT_NAME, 
+        B.AMOUNT, 
+        B.PAYMENT_STATUS
+    FROM BILLS B
+    NATURAL JOIN SUPPLIER S
+    NATURAL JOIN HOSTS H
+    NATURAL JOIN EVENTS E;
+END //
+DELIMITER ;
+
+-- Cursor Procedure to backup hosts data
+DELIMITER $$
+CREATE PROCEDURE BACKUP()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_HOST_ID INT;
+    DECLARE v_HOST_NAME VARCHAR(255);
+    DECLARE v_MOBILE_NUMBER VARCHAR(15);
+    DECLARE v_MAIL_ID VARCHAR(50);
+
+    DECLARE host_cursor CURSOR FOR SELECT HOST_ID, HOST_NAME, MOBILE_NUMBER, MAIL_ID FROM HOSTS;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN host_cursor;
+
+    read_loop: LOOP
+        FETCH host_cursor INTO v_HOST_ID, v_HOST_NAME, v_MOBILE_NUMBER, v_MAIL_ID;
+        IF done = 1 THEN 
+            LEAVE read_loop;
+        END IF;
+
+        INSERT INTO backup_table (HOST_ID, HOST_NAME, MOBILE_NUMBER, MAIL_ID) 
+        VALUES (v_HOST_ID, v_HOST_NAME, v_MOBILE_NUMBER, v_MAIL_ID);
+    END LOOP;
+
+    CLOSE host_cursor;
+END $$
+DELIMITER ;
