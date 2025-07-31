@@ -4,16 +4,19 @@ from attendees import attendees_page
 from hosts import host_page
 from bills import bills_page
 from supplier import supplier_page
-
 from attendee_event import attendee_event
 from query import query_page
 
 import sqlite3
+import shutil, os
 
+# ✅ DB FIX for Streamlit Cloud (copies DB to a writable temp folder)
+db_path = "/tmp/event_project.db"
+if not os.path.exists(db_path):
+    shutil.copy("event_project.db", db_path)
 
-conn = sqlite3.connect("event_project.db")
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
-
 
 def create_table():
     cursor.execute('''
